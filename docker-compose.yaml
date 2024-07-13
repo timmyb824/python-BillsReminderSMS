@@ -1,0 +1,15 @@
+---
+services:
+  scripts:
+    container_name: bills_reminder_sms
+    # image: bills_reminder_sms
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - EMAIL=${ENAIL}
+      - GOOGLE_APP_PASSWORD=${GOOGLE_APP_PASSWORD}
+      - PHONE_NUMBER=${PHONE_NUMBER}
+      - HEALTHCHECKS_URL_BILLS_REMINDER_SMS=${HEALTHCHECKS_URL_BILLS_REMINDER_SMS}
+#      - SCHEDULE_INTERVAL="60 minutes"
+    network_mode: host
