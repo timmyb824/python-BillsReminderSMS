@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import smtplib
@@ -5,17 +6,26 @@ from datetime import datetime, timedelta
 from email.message import EmailMessage
 
 import requests
-from rocketry import Rocketry
-from rocketry.conds import daily  # hourly, every
 
-app = Rocketry()
 
-logging.basicConfig(
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    level=logging.INFO,
-)
+class JsonFormatter(logging.Formatter):
+    def format(self, record):
+        log_record = {
+            "timestamp": self.formatTime(record, self.datefmt),
+            "level": record.levelname,
+            "name": record.name,
+            "message": record.getMessage(),
+        }
+        if record.exc_info:
+            log_record["exc_info"] = self.formatException(record.exc_info)
+        return json.dumps(log_record)
 
+
+handler = logging.StreamHandler()
+handler.setFormatter(JsonFormatter())
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.handlers = [handler]
 
 CARRIERS = {
     "att": "@mms.att.net",
@@ -28,7 +38,6 @@ EMAIL = os.environ.get("EMAIL")
 PASSWORD = os.environ.get("GOOGLE_APP_PASSWORD")
 PHONE_NUMBER = os.environ.get("PHONE_NUMBER")
 HEALTHCHECKS_URL = os.environ.get("HEALTHCHECKS_URL_BILLS_REMINDER_SMS")
-# SCHEDULE_INTERVAL = os.environ.get("SCHEDULE_INTERVAL")
 
 
 def send_message(phone_number, carrier, subject, message):
@@ -61,9 +70,6 @@ def send_message(phone_number, carrier, subject, message):
         )
 
 
-@app.task(daily.at("23:00"))
-# @app.task(every("24 hours"))
-# @app.task(every(f"{SCHEDULE_INTERVAL}"))
 def main():
     # List of bills with the day of the month they are due
     bills = {
@@ -97,4 +103,4 @@ def main():
 
 
 if __name__ == "__main__":
-    app.run()
+    main()
