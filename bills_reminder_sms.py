@@ -63,7 +63,7 @@ def send_message(phone_number, carrier, subject, message):
 
     except Exception as e:
         requests.get(f"{HEALTHCHECKS_URL}/fail", timeout=10)
-        logging.error(
+        logger.error(
             "Failed to send reminder for the following bill(s): %s. Exception: %s",
             subject,
             e,
@@ -90,13 +90,13 @@ def main():
         subject = "Bill Reminder: Bills Due"
         message = f"Reminder: Your {bills_list} bill(s) are due tomorrow, on {tomorrow.strftime('%Y-%m-%d')}. Don't forget to pay them on time!"
         send_message(PHONE_NUMBER, "tmobile", subject, message)
-        logging.info("Reminder sent for the following bill(s): %s", bills_list)
+        logger.info("Reminder sent for the following bill(s): %s", bills_list)
     else:
-        logging.info("No bills due tomorrow.")
+        logger.info("No bills due tomorrow.")
         try:
             requests.get(HEALTHCHECKS_URL, timeout=10)
         except requests.RequestException as re:
-            logging.error(
+            logger.error(
                 "Failed to send health check signal when no bills are due. Exception: %s",
                 re,
             )
